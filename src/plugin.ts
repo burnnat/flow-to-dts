@@ -1,7 +1,9 @@
-import { Babel, BabelPluginResult } from './babel';
+import { Babel, BabelPluginResult } from '@babel/core';
+import flowSyntax from '@babel/plugin-syntax-flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
 	return {
+		inherits: flowSyntax,
 		visitor: {
 			NullableTypeAnnotation(path) {
 				path.replaceWith(

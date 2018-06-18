@@ -4,7 +4,8 @@
   "description": "Convert Flow libdefs to Typescript .d.ts.",
   "main": "index.js",
   "scripts": {
-    "exec": "node dist/cli.js"
+    "exec": "node dist/cli.js",
+    "test": "mocha -r ts-node/register test/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,12 @@
     "@babel/plugin-syntax-flow": "^7.0.0-beta.51"
   },
   "devDependencies": {
+    "@types/mocha": "^5.2.2",
     "@types/node": "^10.3.3",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-plugin-tester": "^5.4.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^6.1.1",
     "typescript": "^2.9.2"
   }
 }
