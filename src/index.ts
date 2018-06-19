@@ -8,7 +8,6 @@ export default function transform(input: string, callback: (err: Error | null, o
 		{
 			babelrc: false,
 			plugins: [
-				'@babel/plugin-syntax-flow',
 				plugin
 			]
 		},

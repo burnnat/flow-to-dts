@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "exec": "node dist/cli.js",
-    "test": "mocha -r ts-node/register test/**/*.ts"
+    "test": "mocha -r ts-node/register test/**/*.ts",
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
