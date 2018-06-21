@@ -34,6 +34,24 @@ export default function({ types: t }: Babel): BabelPluginResult {
 						)
 					])
 				)
+			},
+
+			ObjectTypeAnnotation(path) {
+				const node = path.node;
+
+				if (node.exact) {
+					node.exact = false;
+				}
+				else {
+					path.pushContainer(
+						'indexers',
+						t.objectTypeIndexer(
+							t.identifier('field'),
+							t.stringTypeAnnotation(),
+							t.anyTypeAnnotation()
+						)
+					)
+				}
 			}
 		}
 	};

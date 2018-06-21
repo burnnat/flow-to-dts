@@ -9,15 +9,15 @@ pluginTester({
 		babelrc: false
 	},
 	tests: {
-		'strip single-line flow directive': {
+		'single-line flow directive': {
 			code: '// @flow',
 			output: ''
 		},
-		'preserve single-line comments': {
+		'single-line comment': {
 			code: '// Sample comment',
 			output: '// Sample comment'
 		},
-		'strip multi-line flow directive': {
+		'multi-line flow directive': {
 			code: `
 				/**
 				 * @flow
@@ -25,7 +25,7 @@ pluginTester({
 			`,
 			output: ''
 		},
-		'preserve multi-line comments': {
+		'multi-line comment': {
 			code: `
 				/**
 				 * Sample comment
@@ -37,9 +37,68 @@ pluginTester({
 				 */
 			`
 		},
-		'nullable types': {
+		'nullable type': {
 			code: 'type NullableType = ?string;',
 			output: 'type NullableType = string | null | undefined;'
+		},
+		'exact object': {
+			code: `
+				type Exact = {|
+				  name: string,
+				  age: number,
+				|};
+			`,
+			output: `
+				type Exact = {
+				  name: string,
+				  age: number,
+				};
+			`
+		},
+		'extended object': {
+			code: `
+				type Extended = {
+				  name: string,
+				  age: number,
+				};
+			`,
+			output: `
+				type Extended = {
+				  name: string,
+				  age: number,
+				  [field: string]: any,
+				};
+			`
+		},
+		'extended object with reserved field name': {
+			code: `
+				type ExtendedReserved = {
+				  field: string,
+				  value: any,
+				};
+			`,
+			output: `
+				type ExtendedReserved = {
+				  field: string,
+				  value: any,
+				  [field: string]: any,
+				};
+			`
+		},
+		'extended object with multiple reserved field names': {
+			code: `
+				type ExtendedReserved = {
+				  field: string,
+				  other: object,
+				};
+			`,
+			output: `
+				type ExtendedReserved = {
+				  field: string,
+				  other: object,
+				  [field: string]: any,
+				};
+			`
 		}
 	}
 });
