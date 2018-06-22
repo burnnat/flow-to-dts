@@ -55,6 +55,18 @@ pluginTester({
 				};
 			`
 		},
+		'exact object with readonly field': {
+			code: `
+				type Exact = {|
+				  +key: boolean;
+				|};
+			`,
+			output: `
+				type Exact = {
+				  readonly key: boolean;
+				};
+			`
+		},
 		'extended object': {
 			code: `
 				type Extended = {

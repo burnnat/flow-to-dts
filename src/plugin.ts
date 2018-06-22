@@ -1,5 +1,5 @@
 import { Babel, BabelPluginResult } from '@babel/core';
-import { Node as BabelNode } from '@babel/types';
+import { Node as BabelNode, BooleanTypeAnnotation } from '@babel/types';
 import { TypeParameterDeclaration, TypeParameter, TypeAlias, FlowType, TSType, TSTypeElement, ObjectTypeProperty, StringTypeAnnotation, NullableTypeAnnotation, TSTypeParameter, ObjectTypeAnnotation, TSTypeParameterDeclaration, TSPropertySignature, NumberTypeAnnotation, AnyTypeAnnotation, GenericTypeAnnotation } from '@babel/types';
 import flowSyntax from '@babel/plugin-syntax-flow';
 
@@ -61,10 +61,18 @@ export default function({ types: t }: Babel): BabelPluginResult {
 	addConverter<ObjectTypeProperty, TSPropertySignature>(
 		convert,
 		'ObjectTypeProperty',
-		(node) => t.tsPropertySignature(
-			node.key,
-			t.tsTypeAnnotation(convert(node.value))
-		)
+		(node) => {
+			const result = t.tsPropertySignature(
+				node.key,
+				t.tsTypeAnnotation(convert(node.value))
+			);
+
+			if (node.variance && node.variance.kind === 'plus') {
+				result.readonly = true;
+			}
+
+			return result;
+		}
 	);
 
 	addConverter<StringTypeAnnotation, TSType>(
@@ -77,6 +85,12 @@ export default function({ types: t }: Babel): BabelPluginResult {
 		convert,
 		'NumberTypeAnnotation',
 		(node) => t.tsNumberKeyword()
+	);
+
+	addConverter<BooleanTypeAnnotation, TSType>(
+		convert,
+		'BooleanTypeAnnotation',
+		(node) => t.tsBooleanKeyword()
 	);
 
 	addConverter<GenericTypeAnnotation, TSType>(
