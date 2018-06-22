@@ -44,59 +44,59 @@ pluginTester({
 		'exact object': {
 			code: `
 				type Exact = {|
-				  name: string,
-				  age: number,
+				  name: string;
+				  age: number;
 				|};
 			`,
 			output: `
 				type Exact = {
-				  name: string,
-				  age: number,
+				  name: string;
+				  age: number;
 				};
 			`
 		},
 		'extended object': {
 			code: `
 				type Extended = {
-				  name: string,
-				  age: number,
+				  name: string;
+				  age: number;
 				};
 			`,
 			output: `
 				type Extended = {
-				  name: string,
-				  age: number,
-				  [field: string]: any,
+				  name: string;
+				  age: number;
+				  [field: string]: any;
 				};
 			`
 		},
 		'extended object with reserved field name': {
 			code: `
 				type ExtendedReserved = {
-				  field: string,
-				  value: any,
+				  field: string;
+				  value: any;
 				};
 			`,
 			output: `
 				type ExtendedReserved = {
-				  field: string,
-				  value: any,
-				  [field: string]: any,
+				  field: string;
+				  value: any;
+				  [field: string]: any;
 				};
 			`
 		},
 		'extended object with multiple reserved field names': {
 			code: `
 				type ExtendedReserved = {
-				  field: string,
-				  other: object,
+				  field: string;
+				  other: object;
 				};
 			`,
 			output: `
 				type ExtendedReserved = {
-				  field: string,
-				  other: object,
-				  [field: string]: any,
+				  field: string;
+				  other: object;
+				  [field: string]: any;
 				};
 			`
 		}
