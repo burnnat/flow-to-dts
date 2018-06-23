@@ -10,7 +10,10 @@ declare module '@babel/core' {
 		pre?(state: State): void;
 		post?(state: State): void;
 
-		inherits?: BabelPlugin,
+		inherits?: BabelPlugin;
+
+		parserOverride?: any;
+		generatorOverride?: any;
 
 		visitor: {
 			[key in Node['type']]?: (path: any, state: State) => void
@@ -38,13 +41,6 @@ declare module '@babel/core' {
 	export const types: BabelTypes;
 }
 
-declare module '@babel/plugin-syntax-flow' {
-	import { BabelPlugin } from '@babel/core';
-	const flowSyntax: BabelPlugin;
-
-	export default flowSyntax;
-}
-
 declare module 'babel-plugin-tester' {
 	import { BabelPlugin } from '@babel/core';
 
@@ -63,9 +59,15 @@ declare module 'babel-plugin-tester' {
 		plugin: BabelPlugin;
 		pluginName?: string;
 		babelOptions?: object;
-		tests: { [name: string]: TestDescriptor } | TestDescriptor[];
+		tests?: { [name: string]: TestDescriptor } | TestDescriptor[];
+		fixtures?: string;
 	}
 
 	function BabelPluginTester(options: TestOptions): void;
 	export = BabelPluginTester;
+}
+
+declare module 'recast' {
+	export function parse(code: string, options?: object): object;
+	export function print(ast: object, options?: object): string;
 }

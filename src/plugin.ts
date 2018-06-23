@@ -1,7 +1,7 @@
 import { Babel, BabelPluginResult } from '@babel/core';
 import { Node as BabelNode, BooleanTypeAnnotation } from '@babel/types';
 import { TypeParameterDeclaration, TypeParameter, TypeAlias, FlowType, TSType, TSTypeElement, ObjectTypeProperty, StringTypeAnnotation, NullableTypeAnnotation, TSTypeParameter, ObjectTypeAnnotation, TSTypeParameterDeclaration, TSPropertySignature, NumberTypeAnnotation, AnyTypeAnnotation, GenericTypeAnnotation } from '@babel/types';
-import flowSyntax from '@babel/plugin-syntax-flow';
+import recast from 'recast';
 
 const FLOW_DIRECTIVE = '@flow';
 
@@ -144,20 +144,40 @@ export default function({ types: t }: Babel): BabelPluginResult {
 	);
 
 	return {
-		inherits: flowSyntax,
+		parserOverride: (
+			code: string,
+			options: any,
+			parse: (code: string, options: any) => any
+		) => recast.parse(code, {
+			parser: {
+				parse(code: string) {
+					return parse(code, {
+						sourceType: 'module',
+						allowImportExportEverywhere: true,
+						allowReturnOutsideFunction: true,
+						allowSuperOutsideMethod: true,
+						plugins: ['flow']
+					});
+				}
+			}
+		}),
+
+		generatorOverride: (ast: object) => recast.print(ast, { flowObjectCommas: false }),
+
 		visitor: {
-			File(path) {
+			Program(path) {
 				const comments = path.node.comments;
 
-				for (const comment of comments) {
-					if (comment.value.includes(FLOW_DIRECTIVE)) {
-						// strip flow directive
-						comment.value = comment.value.replace(FLOW_DIRECTIVE, '');
+				if (!comments) {
+					return;
+				}
 
-						// remove the comment completely if it only consists of whitespace and/or stars
-						if (!comment.value.replace(/\*/g, '').trim()) {
-							comment.ignore = true;
-						}
+				for (const comment of comments) {
+					let value = comment.value;
+
+					if (value.includes(FLOW_DIRECTIVE)) {
+						// strip flow directive
+						comment.value = value.replace(FLOW_DIRECTIVE, '');
 					}
 				}
 			},

@@ -1,0 +1,1 @@
+type NullableType = ?string;
