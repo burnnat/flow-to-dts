@@ -44,26 +44,28 @@ declare module '@babel/core' {
 declare module 'babel-plugin-tester' {
 	import { BabelPlugin } from '@babel/core';
 
-	interface TestObject {
-		code: string;
+	interface TestOptions {
 		title?: string;
 		output?: string;
+		outputFixture?: string;
 
 		only?: boolean;
 		skip?: boolean;
+		snapshot?: boolean;
 	}
 
-	type TestDescriptor = TestObject | string;
+	type TestDescriptor = TestOptions & { code: string } | string;
 
-	interface TestOptions {
+	interface TesterOptions extends TestOptions {
 		plugin: BabelPlugin;
 		pluginName?: string;
+		title?: string;
 		babelOptions?: object;
 		tests?: { [name: string]: TestDescriptor } | TestDescriptor[];
 		fixtures?: string;
 	}
 
-	function BabelPluginTester(options: TestOptions): void;
+	function BabelPluginTester(options: TesterOptions): void;
 	export = BabelPluginTester;
 }
 

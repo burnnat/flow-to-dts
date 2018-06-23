@@ -2,13 +2,12 @@ import { Babel, BabelPluginResult } from '@babel/core';
 import { TypeAlias } from '@babel/types';
 import recast from 'recast';
 
-import Converter from './converter';
+import createConverter from './convert';
 
 const FLOW_DIRECTIVE = '@flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
-
-	const converter = new Converter(t);
+	const convert = createConverter(t);
 
 	return {
 		parserOverride: (
@@ -55,8 +54,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 				path.replaceWith(
 					t.tsTypeAliasDeclaration(
 						node.id,
-						converter.convert(node.typeParameters),
-						converter.convert(node.right)
+						convert(node.typeParameters),
+						convert(node.right)
 					)
 				);
 			}
