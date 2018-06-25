@@ -120,12 +120,24 @@ export default function({ types: t }: Babel): BabelPluginResult {
 
 			DeclareModuleExports(path) {
 				const node: DeclareModuleExports = path.node;
+				const typeAnnotation = node.typeAnnotation.typeAnnotation;
+				const expression = convertExpression(typeAnnotation);
 
-				path.replaceWith(
-					t.tsExportAssignment(
-						convertExpression(node.typeAnnotation.typeAnnotation)
-					)
-				);
+				if (t.isIdentifier(expression)) {
+					path.replaceWith(t.tsExportAssignment(expression));
+				}
+				else {
+					const identifier = t.identifier('_export');
+
+					path.replaceWithMultiple([
+						t.tsTypeAliasDeclaration(
+							identifier,
+							null,
+							convertNode(typeAnnotation)
+						),
+						t.tsExportAssignment(identifier)
+					]);
+				}
 			}
 		}
 	};

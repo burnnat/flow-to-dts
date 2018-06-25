@@ -1,2 +1,3 @@
 export = MyModule
-export = typeof MyModule
+type _export = typeof MyModule;
+export = _export
