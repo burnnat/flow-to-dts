@@ -1,11 +1,6 @@
 import { BabelTypes } from '@babel/core';
 import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation } from '@babel/types';
-
-type Convert<T extends BabelNode, O extends BabelNode> = (node: T) => O;
-
-interface ConverterMap {
-	[type: string]: Convert<any, any>;
-}
+import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
 	const converters: ConverterMap = {};
@@ -17,30 +12,12 @@ export default function createConverter(t: BabelTypes) {
 	function convert(node: FunctionTypeParam | null): Identifier;
 	function convert(node: FlowType | null): TSType;
 	function convert(node: BabelNode | null): BabelNode | null {
-		if (!node) {
-			return null;
-		}
-		else {
-			const type = node.type;
-			const converter: Convert<BabelNode, BabelNode> = converters[type];
-
-			if (!converter) {
-				const loc = node.loc;
-				const prefix = loc ? `[${loc.start.line}:${loc.start.column}] ` : '';
-				throw new Error(prefix + 'No converter exists for node type: ' + type)
-			}
-			else {
-				return converter(node);
-			}
-		}
-	}
-
-	function addConverter<T extends BabelNode, O extends BabelNode>(parent: Convert<T, O>, type: T['type'], worker: Convert<T, O>) {
-		converters[type] = worker;
+		return convertInternal(node, converters);
 	}
 
 	addConverter<TypeParameterDeclaration, TSTypeParameterDeclaration>(
 		convert,
+		converters,
 		'TypeParameterDeclaration',
 		(node) => t.tsTypeParameterDeclaration(
 			node.params.map((param) => convert(param))
@@ -49,6 +26,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<TypeParameter, TSTypeParameter>(
 		convert,
+		converters,
 		'TypeParameter',
 		(node) => {
 			const result = t.tsTypeParameter();
@@ -59,6 +37,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<ObjectTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'ObjectTypeAnnotation',
 		(node) => {
 			const elements: TSTypeElement[] = [];
@@ -87,6 +66,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<ObjectTypeProperty, TSPropertySignature>(
 		convert,
+		converters,
 		'ObjectTypeProperty',
 		(node) => {
 			const result = t.tsPropertySignature(
@@ -104,6 +84,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<FunctionTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'FunctionTypeAnnotation',
 		(node) => {
 			const result = t.tsFunctionType();
@@ -117,6 +98,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<FunctionTypeParam, Identifier>(
 		convert,
+		converters,
 		'FunctionTypeParam',
 		(node) => {
 			const result = t.identifier(
@@ -136,6 +118,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<NullableTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'NullableTypeAnnotation',
 		(node) => t.tsUnionType([
 			convert(node.typeAnnotation) as TSType,
@@ -146,6 +129,7 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<UnionTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'UnionTypeAnnotation',
 		(node) => t.tsUnionType(
 			node.types.map((subtype) => {
@@ -163,66 +147,92 @@ export default function createConverter(t: BabelTypes) {
 
 	addConverter<GenericTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'GenericTypeAnnotation',
-		(node) => t.tsTypeReference(node.id)
+		(node) => {
+			if (node.id.name === 'Class' && node.typeParameters != null) {
+				const param = node.typeParameters.params[0];
+
+				if (t.isGenericTypeAnnotation(param)) {
+					// return t.unaryExpression('typeof', param.id);
+					return t.tsTypeQuery(param.id);
+				}
+				else {
+					throw new Error('Complex expressions for typeof not yet supported: ' + param.type);
+				}
+			}
+			else {
+				return t.tsTypeReference(node.id);
+			}
+		}
 	);
 
 	addConverter<VoidTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'VoidTypeAnnotation',
 		(node) => t.tsVoidKeyword()
 	);
 
 	addConverter<StringTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'StringTypeAnnotation',
 		(node) => t.tsStringKeyword()
 	);
 
 	addConverter<NumberTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'NumberTypeAnnotation',
 		(node) => t.tsNumberKeyword()
 	);
 
 	addConverter<BooleanTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'BooleanTypeAnnotation',
 		(node) => t.tsBooleanKeyword()
 	);
 
 	addConverter<AnyTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'AnyTypeAnnotation',
 		(node) => t.tsAnyKeyword()
 	);
 
 	addConverter<ThisTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'ThisTypeAnnotation',
 		(node) => t.tsThisType()
 	);
 
 	addConverter<NullLiteralTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'NullLiteralTypeAnnotation',
 		(node) => t.tsNullKeyword()
 	);
 
 	addConverter<BooleanLiteralTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'BooleanLiteralTypeAnnotation',
 		(node) => t.tsLiteralType(t.booleanLiteral(node.value))
 	);
 
 	addConverter<NumberLiteralTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'NumberLiteralTypeAnnotation',
 		(node) => t.tsLiteralType(t.numericLiteral(node.value))
 	);
 
 	addConverter<StringLiteralTypeAnnotation, TSType>(
 		convert,
+		converters,
 		'StringLiteralTypeAnnotation',
 		(node) => t.tsLiteralType(t.stringLiteral(node.value))
 	);

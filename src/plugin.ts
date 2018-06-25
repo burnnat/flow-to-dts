@@ -1,13 +1,13 @@
 import { Babel, BabelPluginResult } from '@babel/core';
-import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier } from '@babel/types';
+import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier, DeclareModule, DeclareModuleExports, Expression } from '@babel/types';
 import recast from 'recast';
 
-import createConverter from './convert';
+import createConverters from './convert/convert';
 
 const FLOW_DIRECTIVE = '@flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
-	const convert = createConverter(t);
+	const { convertNode, convertExpression } = createConverters(t);
 
 	return {
 		parserOverride: (
@@ -54,8 +54,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 				path.replaceWith(
 					t.tsTypeAliasDeclaration(
 						node.id,
-						convert(node.typeParameters),
-						convert(node.right)
+						convertNode(node.typeParameters),
+						convertNode(node.right)
 					)
 				);
 			},
@@ -75,8 +75,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 									null,
 									property.key,
 									null,
-									value.params.map((param) => convert(param)),
-									t.tsTypeAnnotation(convert(value.returnType))
+									value.params.map((param) => convertNode(param)),
+									t.tsTypeAnnotation(convertNode(value.returnType))
 								)
 							);
 						}
@@ -85,7 +85,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 								t.classProperty(
 									property.key,
 									null,
-									t.tsTypeAnnotation(convert(value))
+									t.tsTypeAnnotation(convertNode(value))
 								)
 							)
 						}
@@ -101,6 +101,31 @@ export default function({ types: t }: Babel): BabelPluginResult {
 				result.declare = true;
 
 				path.replaceWith(result);
+			},
+
+			DeclareModule(path) {
+				const node: DeclareModule = path.node;
+
+				const result = t.tsModuleDeclaration(
+					node.id,
+					t.tsModuleBlock(
+						node.body.body
+					)
+				);
+
+				result.declare = true;
+
+				path.replaceWith(result);
+			},
+
+			DeclareModuleExports(path) {
+				const node: DeclareModuleExports = path.node;
+
+				path.replaceWith(
+					t.tsExportAssignment(
+						convertExpression(node.typeAnnotation.typeAnnotation)
+					)
+				);
 			}
 		}
 	};

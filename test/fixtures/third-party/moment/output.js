@@ -308,5 +308,5 @@ declare class moment$Moment {
 }
 
 declare module "moment" {
-  declare module.exports: Class<moment$Moment>;
+  export = typeof moment$Moment
 }
