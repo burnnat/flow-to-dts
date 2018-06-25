@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation } from '@babel/types';
 
 type Convert<T extends BabelNode, O extends BabelNode> = (node: T) => O;
 
@@ -197,10 +197,34 @@ export default function createConverter(t: BabelTypes) {
 		(node) => t.tsAnyKeyword()
 	);
 
+	addConverter<ThisTypeAnnotation, TSType>(
+		convert,
+		'ThisTypeAnnotation',
+		(node) => t.tsThisType()
+	);
+
 	addConverter<NullLiteralTypeAnnotation, TSType>(
 		convert,
 		'NullLiteralTypeAnnotation',
 		(node) => t.tsNullKeyword()
+	);
+
+	addConverter<BooleanLiteralTypeAnnotation, TSType>(
+		convert,
+		'BooleanLiteralTypeAnnotation',
+		(node) => t.tsLiteralType(t.booleanLiteral(node.value))
+	);
+
+	addConverter<NumberLiteralTypeAnnotation, TSType>(
+		convert,
+		'NumberLiteralTypeAnnotation',
+		(node) => t.tsLiteralType(t.numericLiteral(node.value))
+	);
+
+	addConverter<StringLiteralTypeAnnotation, TSType>(
+		convert,
+		'StringLiteralTypeAnnotation',
+		(node) => t.tsLiteralType(t.stringLiteral(node.value))
 	);
 
 	return convert;

@@ -1,7 +1,10 @@
 type AnyType = any;
 type NullType = null;
+type BooleanLiteralType = false;
+type NumericLiteralType = 12;
+type StringLiteralType = "foo";
 type BooleanType = boolean;
-type StringType = string;
 type NumberType = number;
+type StringType = string;
 type ObjectType = object;
 type EmptyFunctionType = () => void;

@@ -1,5 +1,5 @@
 import { Babel, BabelPluginResult } from '@babel/core';
-import { TypeAlias } from '@babel/types';
+import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier } from '@babel/types';
 import recast from 'recast';
 
 import createConverter from './convert';
@@ -58,6 +58,49 @@ export default function({ types: t }: Babel): BabelPluginResult {
 						convert(node.right)
 					)
 				);
+			},
+
+			DeclareClass(path) {
+				const node: DeclareClass = path.node;
+
+				const members: (ClassProperty | TSDeclareMethod)[] = [];
+
+				node.body.properties.forEach((property) => {
+					if (t.isObjectTypeProperty(property)) {
+						const value = property.value;
+
+						if (t.isFunctionTypeAnnotation(value) && (property as any).method) {
+							members.push(
+								t.tsDeclareMethod(
+									null,
+									property.key,
+									null,
+									value.params.map((param) => convert(param)),
+									t.tsTypeAnnotation(convert(value.returnType))
+								)
+							);
+						}
+						else {
+							members.push(
+								t.classProperty(
+									property.key,
+									null,
+									t.tsTypeAnnotation(convert(value))
+								)
+							)
+						}
+					}
+				});
+
+				const result = t.classDeclaration(
+					node.id,
+					null,
+					t.classBody(members)
+				);
+
+				result.declare = true;
+
+				path.replaceWith(result);
 			}
 		}
 	};
