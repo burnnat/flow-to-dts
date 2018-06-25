@@ -1,0 +1,1 @@
+type GenericArray = Array<string>;

@@ -150,11 +150,12 @@ export default function createConverter(t: BabelTypes) {
 		converters,
 		'GenericTypeAnnotation',
 		(node) => {
-			if (node.id.name === 'Class' && node.typeParameters != null) {
-				const param = node.typeParameters.params[0];
+			const typeParams = node.typeParameters;
+
+			if (node.id.name === 'Class' && typeParams != null) {
+				const param = typeParams.params[0];
 
 				if (t.isGenericTypeAnnotation(param)) {
-					// return t.unaryExpression('typeof', param.id);
 					return t.tsTypeQuery(param.id);
 				}
 				else {
@@ -162,7 +163,15 @@ export default function createConverter(t: BabelTypes) {
 				}
 			}
 			else {
-				return t.tsTypeReference(node.id);
+				const result = t.tsTypeReference(node.id);
+
+				if (typeParams != null) {
+					result.typeParameters = t.tsTypeParameterInstantiation(
+						typeParams.params.map((param) => convert(param))
+					);
+				}
+
+				return result;
 			}
 		}
 	);

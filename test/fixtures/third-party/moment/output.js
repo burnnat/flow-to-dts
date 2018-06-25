@@ -119,13 +119,13 @@ declare class moment$Moment {
   ISO_8601: string;
   unix(seconds: number): moment$Moment;
   utc(): moment$Moment;
-  utc(number: number | Array): moment$Moment;
-  utc(str: string, str2?: string | Array, str3?: string): moment$Moment;
+  utc(number: number | Array<number>): moment$Moment;
+  utc(str: string, str2?: string | Array<string>, str3?: string): moment$Moment;
   utc(moment: moment$Moment): moment$Moment;
   utc(date: Date): moment$Moment;
   parseZone(): moment$Moment;
   parseZone(rawDate: string): moment$Moment;
-  parseZone(rawDate: string, format: string | Array): moment$Moment;
+  parseZone(rawDate: string, format: string | Array<string>): moment$Moment;
   parseZone(rawDate: string, format: string, strict: boolean): moment$Moment;
   parseZone(rawDate: string, format: string, locale: string, strict: boolean): moment$Moment;
   isValid(): boolean;
@@ -195,9 +195,9 @@ declare class moment$Moment {
   ): this;
 
   max(): moment$Moment;
-  max(dates: Array): moment$Moment;
+  max(dates: Array<moment$Moment>): moment$Moment;
   min(): moment$Moment;
-  min(dates: Array): moment$Moment;
+  min(dates: Array<moment$Moment>): moment$Moment;
 
   add(
     value: number | moment$MomentDuration | moment$Moment | Object,
@@ -219,21 +219,21 @@ declare class moment$Moment {
   fromNow(removeSuffix?: boolean): string;
 
   from(
-    value: moment$Moment | string | number | Date | Array,
+    value: moment$Moment | string | number | Date | Array<number>,
     removePrefix?: boolean
   ): string;
 
   toNow(removePrefix?: boolean): string;
 
   to(
-    value: moment$Moment | string | number | Date | Array,
+    value: moment$Moment | string | number | Date | Array<number>,
     removePrefix?: boolean
   ): string;
 
   calendar(refTime?: any, formats?: moment$CalendarFormats): string;
 
   diff(
-    date: moment$Moment | string | number | Date | Array,
+    date: moment$Moment | string | number | Date | Array<number>,
     format?: string,
     floating?: boolean
   ): number;
@@ -242,39 +242,39 @@ declare class moment$Moment {
   unix(): number;
   daysInMonth(): number;
   toDate(): Date;
-  toArray(): Array;
+  toArray(): Array<number>;
   toJSON(): string;
   toISOString(keepOffset?: boolean): string;
   toObject(): moment$MomentObject;
 
   isBefore(
-    date?: moment$Moment | string | number | Date | Array,
+    date?: moment$Moment | string | number | Date | Array<number>,
     units?: string | null | undefined
   ): boolean;
 
   isSame(
-    date?: moment$Moment | string | number | Date | Array,
+    date?: moment$Moment | string | number | Date | Array<number>,
     units?: string | null | undefined
   ): boolean;
 
   isAfter(
-    date?: moment$Moment | string | number | Date | Array,
+    date?: moment$Moment | string | number | Date | Array<number>,
     units?: string | null | undefined
   ): boolean;
 
   isSameOrBefore(
-    date?: moment$Moment | string | number | Date | Array,
+    date?: moment$Moment | string | number | Date | Array<number>,
     units?: string | null | undefined
   ): boolean;
 
   isSameOrAfter(
-    date?: moment$Moment | string | number | Date | Array,
+    date?: moment$Moment | string | number | Date | Array<number>,
     units?: string | null | undefined
   ): boolean;
 
   isBetween(
-    fromDate: moment$Moment | string | number | Date | Array,
-    toDate?: moment$Moment | null | undefined | string | number | Date | Array,
+    fromDate: moment$Moment | string | number | Date | Array<number>,
+    toDate?: moment$Moment | null | undefined | string | number | Date | Array<number>,
     granularity?: string | null | undefined,
     inclusion?: string | null | undefined
   ): boolean;
@@ -287,14 +287,14 @@ declare class moment$Moment {
   isDate(obj: any): boolean;
   locale(locale: string, localeData?: Object): string;
   updateLocale(locale: string, localeData?: Object | null | undefined): void;
-  locale(locales: Array): string;
+  locale(locales: Array<string>): string;
   locale(locale: string, customization?: Object | null): moment$Moment;
   locale(): string;
-  months(): Array;
-  monthsShort(): Array;
-  weekdays(): Array;
-  weekdaysShort(): Array;
-  weekdaysMin(): Array;
+  months(): Array<string>;
+  monthsShort(): Array<string>;
+  weekdays(): Array<string>;
+  weekdaysShort(): Array<string>;
+  weekdaysMin(): Array<string>;
   months(): string;
   monthsShort(): string;
   weekdays(): string;
