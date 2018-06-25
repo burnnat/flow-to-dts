@@ -147,7 +147,18 @@ export default function createConverter(t: BabelTypes) {
 	addConverter<UnionTypeAnnotation, TSType>(
 		convert,
 		'UnionTypeAnnotation',
-		(node) => t.tsUnionType(node.types.map(convert))
+		(node) => t.tsUnionType(
+			node.types.map((subtype) => {
+				const result = convert(subtype);
+
+				if (subtype.type === 'FunctionTypeAnnotation') {
+					return t.tsParenthesizedType(result);
+				}
+				else {
+					return result;
+				}
+			})
+		)
 	);
 
 	addConverter<GenericTypeAnnotation, TSType>(

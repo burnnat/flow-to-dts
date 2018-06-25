@@ -44,7 +44,7 @@ type moment$MomentCreationData = {
   [field: string]: any
 };
 
-type moment$CalendarFormat = string | (moment: moment$Moment) => string;
+type moment$CalendarFormat = string | ((moment: moment$Moment) => string);
 
 type moment$CalendarFormats = {
   sameDay: moment$CalendarFormat,
