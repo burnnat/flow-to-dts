@@ -52,15 +52,20 @@ declare module 'babel-plugin-tester' {
 		only?: boolean;
 		skip?: boolean;
 		snapshot?: boolean;
+
+		setup?: () => Promise<void> | void;
+		teardown?: () => Promise<void> | void;
 	}
 
-	type TestDescriptor = TestOptions & { code: string } | string;
+	type RequiredTestOptions = { code: string } | { fixture: string };
+	type TestDescriptor = TestOptions & RequiredTestOptions | string;
 
 	interface TesterOptions extends TestOptions {
 		plugin: BabelPlugin;
 		pluginName?: string;
 		title?: string;
 		babelOptions?: object;
+		filename?: string;
 		tests?: { [name: string]: TestDescriptor } | TestDescriptor[];
 		fixtures?: string;
 	}
