@@ -1,9 +1,24 @@
+#!/usr/bin/env node
 import fs from 'fs';
+import program from 'commander';
 
 import transform from './index';
 
-const input: string = process.argv[2];
-const output: string = process.argv[3];
+program
+	.name('flow-to-dts')
+	.version('0.0.1')
+	.usage('<input-file> <output-file>')
+	.parse(process.argv);
+
+if (program.args.length < 2) {
+	program.help();
+}
+
+const [input, output] = program.args;
+
+if (!fs.existsSync(input)) {
+	throw new Error('Input file not found: ' + input);
+}
 
 fs.readFile(
 	input,
@@ -12,7 +27,7 @@ fs.readFile(
 		data,
 		(err, result) => {
 			if (err) {
-				console.error(err.toString());
+				throw err;
 			}
 			else {
 				fs.writeFile(
@@ -21,7 +36,7 @@ fs.readFile(
 					'utf8',
 					(err) => {
 						if (err) {
-							console.error(err);
+							throw err;
 						}
 					}
 				);
