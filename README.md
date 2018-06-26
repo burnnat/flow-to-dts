@@ -1,4 +1,6 @@
 # flow-to-dts
+[![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/flow-to-dts)
+
 Convert Flow libdef files to Typescript .d.ts definitions.
 
 # Usage
