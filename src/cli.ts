@@ -2,11 +2,12 @@
 import fs from 'fs';
 import program from 'commander';
 
+import project from '../package.json';
 import transform from './index';
 
 program
 	.name('flow-to-dts')
-	.version('0.0.1')
+	.version(project.version)
 	.usage('<input-file> <output-file>')
 	.parse(process.argv);
 

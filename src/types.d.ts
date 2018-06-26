@@ -78,3 +78,8 @@ declare module 'recast' {
 	export function parse(code: string, options?: object): object;
 	export function print(ast: object, options?: object): string;
 }
+
+declare module "*.json" {
+	const value: any;
+	export default value;
+}

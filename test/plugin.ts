@@ -3,7 +3,7 @@ import path from 'path';
 import ts from 'typescript';
 import pluginTester = require('babel-plugin-tester');
 
-import plugin from '../src/plugin';
+import plugin from '../dist/plugin';
 
 pluginTester({
 	plugin,
