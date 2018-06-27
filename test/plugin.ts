@@ -3,7 +3,7 @@ import path from 'path';
 import ts from 'typescript';
 import pluginTester = require('babel-plugin-tester');
 
-import plugin from '../dist/plugin';
+import plugin from '../src/plugin';
 
 pluginTester({
 	plugin,
@@ -46,11 +46,11 @@ describe('output files', () => {
 					if (filename === virtualOutput) {
 						filename = realOutput;
 					}
-	
+
 					if (!fs.existsSync(filename)) {
 						return undefined;
 					}
-		
+
 					return ts.ScriptSnapshot.fromString(
 						fs.readFileSync(filename).toString()
 					);
@@ -64,17 +64,17 @@ describe('output files', () => {
 				readFile: ts.sys.readFile,
 				readDirectory: ts.sys.readDirectory
 			};
-	
+
 			const service = ts.createLanguageService(host, ts.createDocumentRegistry());
-	
+
 			service.getEmitOutput(virtualOutput);
-	
+
 			const diagnostics = (
 				service.getCompilerOptionsDiagnostics()
 					.concat(service.getSyntacticDiagnostics(virtualOutput))
 					.concat(service.getSemanticDiagnostics(virtualOutput))
 			);
-			
+
 			if (diagnostics.length > 0) {
 				throw new Error(
 					diagnostics.reduce(
@@ -86,7 +86,7 @@ describe('output files', () => {
 							else if (index > truncateErrorLength) {
 								return acc;
 							}
-							
+
 							let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
 
 							if (diagnostic.file) {

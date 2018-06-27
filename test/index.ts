@@ -1,4 +1,4 @@
-import flowToDts from '../dist/index';
+import flowToDts from '../src/index';
 
 describe('node api', () => {
 	it('transforms code', () => {

@@ -59,8 +59,7 @@
       ".tsx"
     ],
     "include": [
-      "src/**",
-      "dist/**"
+      "src/**"
     ],
     "exclude": [
       "**/*.d.ts"

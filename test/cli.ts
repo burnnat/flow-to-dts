@@ -1,5 +1,5 @@
 import run from 'test-cli';
-import cli from '../dist/cli';
+import cli from '../src/cli';
 
 const flowToDts = run.bind(null, cli);
 
