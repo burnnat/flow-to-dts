@@ -83,3 +83,7 @@ declare module "*.json" {
 	const value: any;
 	export default value;
 }
+
+declare module 'test-cli' {
+	export default function run(cli: () => void, ...args: string[]): void;
+}
