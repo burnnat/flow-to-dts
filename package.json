@@ -28,7 +28,7 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "watch": "tsc --watch",
     "prebuild": "npm run clean",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "npm run test && npm run build",
     "postversion": "git push && git push --tags"
   },
   "files": [
