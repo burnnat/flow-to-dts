@@ -3,6 +3,8 @@
 
 Convert Flow libdef files to Typescript .d.ts definitions.
 
+**This tool is currently pre-alpha.** Contribution of issues, suggesions, and pull requests are welcome!
+
 # Usage
 ## Command Line
 ```
@@ -15,5 +17,5 @@ import transform from 'flow-to-dts';
 
 cosnt input = 'type MyCode';
 
-transform(input, (output) => console.log(output));
+transform(input).then((output) => console.log(output));
 ```
