@@ -1,56 +1,24 @@
-import fs from 'fs';
+import fs from 'fs-extra';
 import program from 'yargs';
 
-import project from '../package.json';
 import transform from './index';
 
 type Yargs = program.Argv;
 type Process = any;
 type Callback = (status: number) => void;
 
-function success(process: Process, done: Callback) {
-	process.stdout.write('Transformation completed successfully.\n');
-	done(0);
-}
-
-function error(err: string | Error, process: Process, done: Callback) {
-	let message = err instanceof Error ? err.message : err;
-	process.stdout.write('ERROR: ' + message + '\n');
-	done(1);
-}
-
-function execute(input: string, output: string, process: any, done: Callback) {
+function execute(input: string, output: string) {
 	if (!fs.existsSync(input)) {
-		return error('Input file not found: ' + input, process, done);
+		return Promise.reject('Input file not found: ' + input);
 	}
-
-	fs.readFile(
-		input,
-		'utf8',
-		(err, data) => transform(
-			data,
-			(err, result) => {
-				if (err) {
-					return error(err, process, done);
-				}
-				else {
-					fs.writeFile(
-						output,
-						result,
-						'utf8',
-						(err) => {
-							if (err) {
-								return error(err, process, done);
-							}
-							else {
-								return success(process, done);
-							}
-						}
-					);
-				}
-			}
-		)
-	);
+	else {
+		return (
+			fs.readFile(input, 'utf8')
+				.then(transform)
+				.then((result) => fs.writeFile(output, result, 'utf8'))
+				.then(() => 'Transformation completed successfully.\n')
+		);
+	}
 }
 
 export default function(process: Process, done: Callback) {
@@ -81,14 +49,28 @@ export default function(process: Process, done: Callback) {
 					'Both input and output files are required'
 				)
 			),
-			(argv: any) => execute(argv.input, argv.output, process, done)
+			(argv: any) => argv.promise = execute(argv.input, argv.output)
 		)
 		.exitProcess(false)
+		.fail(() => {})
 		.parse(
 			process.argv.slice(2),
 			(err: any, argv: any, output: string) => {
-				process.stdout.write(output + '\n');
-				done(err ? 1 : 0);
+				if (output != null) {
+					process.stdout.write(output + '\n');
+				}
+
+				const promise = argv.promise || Promise.resolve('');
+
+				promise
+					.then((msg: string) => {
+						process.stdout.write(msg + '\n');
+						done(0);
+					})
+					.catch((err: string) => {
+						process.stdout.write(err + '\n');
+						done(1);
+					});
 			}
 		);
 }

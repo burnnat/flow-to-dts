@@ -87,3 +87,14 @@ declare module "*.json" {
 declare module 'test-cli' {
 	export default function run(cli: () => void, ...args: string[]): void;
 }
+
+declare module 'fsify' {
+	function fsify(options: object): (structure: any) => Promise<any>;
+	
+	namespace fsify {
+		export const FILE: any;
+		export const DIRECTORY: any;
+	}
+
+	export = fsify;
+}
