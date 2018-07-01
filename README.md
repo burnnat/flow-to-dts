@@ -32,6 +32,7 @@ transform(input).then((output) => console.log(output));
 | Key Types        | :x:                | `$Keys<A>`                          |                                          |
 | Value Types      | :x:                | `$Values<A>`                        |                                          |
 | Difference Types | :x:                | `$Diff<A>`                          |                                          |
+| Partial Types    | :x:                | `$Shape<A>`                         | `Partial<A>`                             |
 | Rest Types       | :x:                | `$Rest<A>`                          |                                          |
 | Supertypes       | :x:                | `$Supertype<A>`                     |                                          |
 | Subtypes         | :x:                | `$Subtype<A>`                       |                                          |
