@@ -1,7 +1,7 @@
 # flow-to-dts
 [![flow-to-dts](https://img.shields.io/npm/v/flow-to-dts.svg)](https://www.npmjs.com/package/flow-to-dts) [![Build Status](https://travis-ci.org/burnnat/flow-to-dts.svg?branch=master)](https://travis-ci.org/burnnat/flow-to-dts) [![Coverage Status](https://coveralls.io/repos/github/burnnat/flow-to-dts/badge.svg?branch=master)](https://coveralls.io/github/burnnat/flow-to-dts?branch=master)
 
-Convert [Flow libdefs](https://flow.org/en/docs/libdefs/) to Typescript .d.ts definitions.
+Convert [Flow libdefs](https://flow.org/en/docs/libdefs/) to [Typescript declaration files](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html).
 
 **This tool is currently pre-alpha.** Contribution of issues, suggesions, and pull requests are welcome!
 
