@@ -21,19 +21,20 @@ transform(input).then((output) => console.log(output));
 ```
 
 # Supported Features
-| Feature          | Status             | Flow                                | Typescript                               |
-|------------------|--------------------|-------------------------------------|------------------------------------------|
-| Flow Header      | :heavy_check_mark: | `// @flow`                          | `// `                                    |
-| Module Exports   | :heavy_check_mark: | `declare module.exports: MyModule;` | `export = MyModule;`                     |
-| Nullable Types   | :heavy_check_mark: | `?string`                           | `string | null | undefined`              |
-| Class Types      | :heavy_check_mark: | `Class<SomeType>`                   | `typeof SomeType`                        |
-| Exact Objects    | :heavy_check_mark: | `{| name: string |}`                | `{ name: string }`                       |
-| Open Objects     | :heavy_check_mark: | `{ name: string }`                  | `{ name: string; [field: string]: any }` |
-| Key Types        | :x:                | `$Keys<A>`                          |                                          |
-| Value Types      | :x:                | `$Values<A>`                        |                                          |
-| Difference Types | :x:                | `$Diff<A>`                          |                                          |
-| Partial Types    | :x:                | `$Shape<A>`                         | `Partial<A>`                             |
-| Rest Types       | :x:                | `$Rest<A>`                          |                                          |
-| Supertypes       | :x:                | `$Supertype<A>`                     |                                          |
-| Subtypes         | :x:                | `$Subtype<A>`                       |                                          |
-| Existential Type | :x:                | `*`                                 |                                          |
+| Feature          | Status             | Flow                                | Typescript                                    |
+|------------------|--------------------|-------------------------------------|-----------------------------------------------|
+| Flow Header      | :heavy_check_mark: | `// @flow`                          | `// `                                         |
+| Module Exports   | :heavy_check_mark: | `declare module.exports: MyModule;` | `export = MyModule;`                          |
+| Mixed Type       | :heavy_check_mark: | `mixed`                             | `number | string | boolean | symbol | object` |
+| Nullable Types   | :heavy_check_mark: | `?string`                           | `string | null | undefined`                   |
+| Class Types      | :heavy_check_mark: | `Class<SomeType>`                   | `typeof SomeType`                             |
+| Exact Objects    | :heavy_check_mark: | `{| name: string |}`                | `{ name: string }`                            |
+| Open Objects     | :heavy_check_mark: | `{ name: string }`                  | `{ name: string; [field: string]: any }`      |
+| Key Types        | :x:                | `$Keys<A>`                          |                                               |
+| Value Types      | :x:                | `$Values<A>`                        |                                               |
+| Difference Types | :x:                | `$Diff<A>`                          |                                               |
+| Partial Types    | :x:                | `$Shape<A>`                         | `Partial<A>`                                  |
+| Rest Types       | :x:                | `$Rest<A>`                          |                                               |
+| Supertypes       | :x:                | `$Supertype<A>`                     |                                               |
+| Subtypes         | :x:                | `$Subtype<A>`                       |                                               |
+| Existential Type | :x:                | `*`                                 |                                               |

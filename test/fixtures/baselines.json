@@ -1,0 +1,12 @@
+{
+    "npm": [
+        {
+            "library": "moment_v2.3.x",
+            "flow": "flow_v0.63.x-"
+        },
+        {
+            "library": "yargs_v10.x.x",
+            "flow": "flow_v0.54.x-"
+        }
+    ]
+}

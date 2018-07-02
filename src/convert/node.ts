@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -244,6 +244,19 @@ export default function createConverter(t: BabelTypes) {
 		converters,
 		'StringLiteralTypeAnnotation',
 		(node) => t.tsLiteralType(t.stringLiteral(node.value))
+	);
+
+	addConverter<MixedTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'MixedTypeAnnotation',
+		(node) => t.tsUnionType([
+			t.tsNumberKeyword(),
+			t.tsStringKeyword(),
+			t.tsBooleanKeyword(),
+			t.tsSymbolKeyword(),
+			t.tsObjectKeyword()
+		])
 	);
 
 	return convert;

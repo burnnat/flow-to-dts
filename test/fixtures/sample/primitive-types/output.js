@@ -8,3 +8,4 @@ type NumberType = number;
 type StringType = string;
 type ObjectType = object;
 type EmptyFunctionType = () => void;
+type MixedType = number | string | boolean | symbol | object;
