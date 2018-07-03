@@ -1,5 +1,5 @@
 import { Babel, BabelPluginResult } from '@babel/core';
-import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier, DeclareModule, DeclareModuleExports, Expression } from '@babel/types';
+import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier, DeclareModule, DeclareModuleExports, Expression, DeclareTypeAlias } from '@babel/types';
 import recast from 'recast';
 
 import createConverters from './convert/convert';
@@ -7,7 +7,7 @@ import createConverters from './convert/convert';
 const FLOW_DIRECTIVE = '@flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
-	const { convertNode, convertExpression } = createConverters(t);
+	const { convertNode, convertAmbient } = createConverters(t);
 
 	return {
 		parserOverride: (
@@ -109,7 +109,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 				const result = t.tsModuleDeclaration(
 					node.id,
 					t.tsModuleBlock(
-						node.body.body
+						convertAmbient(node.body.body)
 					)
 				);
 
@@ -119,25 +119,23 @@ export default function({ types: t }: Babel): BabelPluginResult {
 			},
 
 			DeclareModuleExports(path) {
-				const node: DeclareModuleExports = path.node;
-				const typeAnnotation = node.typeAnnotation.typeAnnotation;
-				const expression = convertExpression(typeAnnotation);
+				path.replaceWithMultiple(
+					convertAmbient([path.node])
+				);
+			},
 
-				if (t.isIdentifier(expression)) {
-					path.replaceWith(t.tsExportAssignment(expression));
-				}
-				else {
-					const identifier = t.identifier('_export');
+			DeclareTypeAlias(path) {
+				const node: DeclareTypeAlias = path.node;
 
-					path.replaceWithMultiple([
-						t.tsTypeAliasDeclaration(
-							identifier,
-							null,
-							convertNode(typeAnnotation)
-						),
-						t.tsExportAssignment(identifier)
-					]);
-				}
+				const result = t.tsTypeAliasDeclaration(
+					node.id,
+					convertNode(node.typeParameters),
+					convertNode(node.right)
+				);
+
+				result.declare = true;
+
+				path.replaceWith(result);
 			}
 		}
 	};

@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -145,6 +145,15 @@ export default function createConverter(t: BabelTypes) {
 		)
 	);
 
+	const createTypeOf = (param: FlowType) => {
+		if (t.isGenericTypeAnnotation(param)) {
+			return t.tsTypeQuery(param.id);
+		}
+		else {
+			throw new Error('Complex expressions for typeof not yet supported: ' + param.type);
+		}
+	}
+
 	addConverter<GenericTypeAnnotation, TSType>(
 		convert,
 		converters,
@@ -153,14 +162,7 @@ export default function createConverter(t: BabelTypes) {
 			const typeParams = node.typeParameters;
 
 			if (node.id.name === 'Class' && typeParams != null) {
-				const param = typeParams.params[0];
-
-				if (t.isGenericTypeAnnotation(param)) {
-					return t.tsTypeQuery(param.id);
-				}
-				else {
-					throw new Error('Complex expressions for typeof not yet supported: ' + param.type);
-				}
+				return createTypeOf(typeParams.params[0]);
 			}
 			else {
 				const result = t.tsTypeReference(node.id);
@@ -174,6 +176,13 @@ export default function createConverter(t: BabelTypes) {
 				return result;
 			}
 		}
+	);
+
+	addConverter<TypeofTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'TypeofTypeAnnotation',
+		(node) => createTypeOf(node.argument)
 	);
 
 	addConverter<VoidTypeAnnotation, TSType>(
