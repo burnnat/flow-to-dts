@@ -2,7 +2,7 @@ import { BabelTypes } from '@babel/core';
 import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
-import createNodeConverter from './node';
+import createNodeConverter from './type';
 
 export default function createConverter(t: BabelTypes) {
 

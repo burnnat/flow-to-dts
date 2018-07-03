@@ -7,7 +7,7 @@ import createConverters from './convert/convert';
 const FLOW_DIRECTIVE = '@flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
-	const { convertNode, convertAmbient } = createConverters(t);
+	const { convertType, convertAmbient } = createConverters(t);
 
 	return {
 		parserOverride: (
@@ -54,8 +54,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 				path.replaceWith(
 					t.tsTypeAliasDeclaration(
 						node.id,
-						convertNode(node.typeParameters),
-						convertNode(node.right)
+						convertType(node.typeParameters),
+						convertType(node.right)
 					)
 				);
 			},
@@ -75,8 +75,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 									null,
 									property.key,
 									null,
-									value.params.map((param) => convertNode(param)),
-									t.tsTypeAnnotation(convertNode(value.returnType))
+									value.params.map((param) => convertType(param)),
+									t.tsTypeAnnotation(convertType(value.returnType))
 								)
 							);
 						}
@@ -85,7 +85,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 								t.classProperty(
 									property.key,
 									null,
-									t.tsTypeAnnotation(convertNode(value))
+									t.tsTypeAnnotation(convertType(value))
 								)
 							)
 						}
@@ -129,8 +129,8 @@ export default function({ types: t }: Babel): BabelPluginResult {
 
 				const result = t.tsTypeAliasDeclaration(
 					node.id,
-					convertNode(node.typeParameters),
-					convertNode(node.right)
+					convertType(node.typeParameters),
+					convertType(node.right)
 				);
 
 				result.declare = true;

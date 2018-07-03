@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -154,15 +154,32 @@ export default function createConverter(t: BabelTypes) {
 		}
 	}
 
+	const createSpecialType = (name: string, params: FlowType[]) => {
+		switch (name) {
+			case 'Class':
+				return createTypeOf(params[0]);
+			case '$Shape':
+				return t.tsTypeReference(
+					t.identifier('Partial'),
+					t.tsTypeParameterInstantiation(
+						params.map((param) => convert(param))
+					)
+				);
+			default:
+				return null;
+		}
+	};
+
 	addConverter<GenericTypeAnnotation, TSType>(
 		convert,
 		converters,
 		'GenericTypeAnnotation',
 		(node) => {
 			const typeParams = node.typeParameters;
+			const specialResult = createSpecialType(node.id.name, typeParams ? typeParams.params : []);
 
-			if (node.id.name === 'Class' && typeParams != null) {
-				return createTypeOf(typeParams.params[0]);
+			if (specialResult) {
+				return specialResult;
 			}
 			else {
 				const result = t.tsTypeReference(node.id);
