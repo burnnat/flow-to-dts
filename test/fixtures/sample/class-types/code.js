@@ -1,4 +1,5 @@
 declare class ClassType {
+  constructor(executor: () => void): ClassType;
   field: string,
   method(arg: boolean): OtherType,
   builder(): this,

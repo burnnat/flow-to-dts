@@ -11,6 +11,10 @@ export interface ConverterMap {
 	[type: string]: Convert<any, any>;
 }
 
+class ConverterError extends Error {
+
+}
+
 export function convertInternal<T>(node: BabelNode | null, converters: ConverterMap): T | null {
 	if (!node) {
 		return null;
@@ -19,13 +23,25 @@ export function convertInternal<T>(node: BabelNode | null, converters: Converter
 		const type = node.type;
 		const converter: Convert<BabelNode, T> = converters[type];
 
-		if (!converter) {
-			const loc = node.loc;
-			const prefix = loc ? `[${loc.start.line}:${loc.start.column}] ` : '';
-			throw new Error(prefix + 'No converter exists for node type: ' + type)
+		try {
+			if (!converter) {
+				throw new Error('No converter exists for node type: ' + type);
+			}
+			else {
+				return converter(node);
+			}
 		}
-		else {
-			return converter(node);
+		catch (err) {
+			const loc = node.loc;
+
+			if (loc && !(err instanceof ConverterError)) {
+				const prefix = loc ? `[${loc.start.line}:${loc.start.column}] ` : '';
+				const errMessage = err instanceof Error ? err.stack || err.message : err;
+				throw new ConverterError(prefix + errMessage);
+			}
+			else {
+				throw err;
+			}
 		}
 	}
 }

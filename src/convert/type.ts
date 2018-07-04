@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -127,22 +127,31 @@ export default function createConverter(t: BabelTypes) {
 		])
 	);
 
+	const parenthesizeTypes = (types: FlowType[]) => types.map(
+		(subtype) => {
+			const result = convert(subtype);
+
+			if (t.isFunctionTypeAnnotation(subtype)) {
+				return t.tsParenthesizedType(result);
+			}
+			else {
+				return result;
+			}
+		}
+	);
+
 	addConverter<UnionTypeAnnotation, TSType>(
 		convert,
 		converters,
 		'UnionTypeAnnotation',
-		(node) => t.tsUnionType(
-			node.types.map((subtype) => {
-				const result = convert(subtype);
+		(node) => t.tsUnionType(parenthesizeTypes(node.types))
+	);
 
-				if (subtype.type === 'FunctionTypeAnnotation') {
-					return t.tsParenthesizedType(result);
-				}
-				else {
-					return result;
-				}
-			})
-		)
+	addConverter<IntersectionTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'IntersectionTypeAnnotation',
+		(node) => t.tsIntersectionType(parenthesizeTypes(node.types))
 	);
 
 	addConverter<ArrayTypeAnnotation, TSType>(
@@ -152,9 +161,20 @@ export default function createConverter(t: BabelTypes) {
 		(node) => t.tsArrayType(convert(node.elementType))
 	);
 
+	const convertQualifiedName = (value: QualifiedTypeIdentifier | Identifier): TSQualifiedName | Identifier => {
+		if (t.isQualifiedTypeIdentifier(value)) {
+			return t.tsQualifiedName(convertQualifiedName(value.qualification), value.id);
+		}
+		else {
+			return value;
+		}
+	}
+
 	const createTypeOf = (param: FlowType) => {
 		if (t.isGenericTypeAnnotation(param)) {
-			return t.tsTypeQuery(param.id);
+			// babel-types only advertises param.id as having type Identifier but in actuality it can also be a QualifiedTypeIdentifier
+			// See reported babel issue #8260 here: https://github.com/babel/babel/issues/8260
+			return t.tsTypeQuery(convertQualifiedName(param.id));
 		}
 		else {
 			throw new Error('Complex expressions for typeof not yet supported: ' + param.type);
@@ -290,6 +310,13 @@ export default function createConverter(t: BabelTypes) {
 			t.tsSymbolKeyword(),
 			t.tsObjectKeyword()
 		])
+	);
+
+	addConverter<ExistsTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'ExistsTypeAnnotation',
+		(node) => t.tsAnyKeyword()
 	);
 
 	return convert;

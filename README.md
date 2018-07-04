@@ -50,7 +50,7 @@ transformAst(input).then((output) => console.log(JSON.stringify(output)));
 | Rest Types       | :x:                | `$Rest<A>`                          |                                                   |
 | Supertypes       | :x:                | `$Supertype<A>`                     |                                                   |
 | Subtypes         | :x:                | `$Subtype<A>`                       |                                                   |
-| Existential Type | :x:                | `*`                                 |                                                   |
+| Existential Type | :heavy_check_mark: | `*`                                 | `any`                                             |
 
 # Acknowledgements
 Special thanks to the creators and maintainers of the following projects that made this tool possible:

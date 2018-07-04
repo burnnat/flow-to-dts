@@ -4,7 +4,7 @@ import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnno
 import createTypeConverter from './type';
 import { ConverterMap, convertInternal, addConverter } from "./convert";
 
-type ConvertMethod<T> = (key: Expression, params: Identifier[], returnType: TSTypeAnnotation) => T;
+type ConvertMethod<T> = (key: Expression, params: Identifier[], returnType: TSTypeAnnotation, isConstructor: boolean) => T;
 type ConvertProperty<T> = (key: Expression, type: TSTypeAnnotation, optional: boolean) => T;
 type PropertyList<M, P> = (M | P | TSIndexSignature)[];
 
@@ -37,7 +37,8 @@ export default function createPropertyConverters(t: BabelTypes) {
 						convertMethod(
 							key,
 							value.params.map((param) => convertType(param)),
-							t.tsTypeAnnotation(convertType(value.returnType))
+							t.tsTypeAnnotation(convertType(value.returnType)),
+							t.isIdentifier(key) && key.name === 'constructor'
 						)
 					);
 				}
@@ -73,8 +74,11 @@ export default function createPropertyConverters(t: BabelTypes) {
 	const convertClassBody = (body: ObjectTypeAnnotation) => t.classBody(
 		mapProperties(
 			body,
-			(key: Expression, params: Identifier[], returnType: TSTypeAnnotation) =>
-				t.tsDeclareMethod(null, key, null, params, returnType),
+			(key: Expression, params: Identifier[], returnType: TSTypeAnnotation | null, isConstructor: boolean) => {
+				const result = t.tsDeclareMethod(null, key, null, params, isConstructor ? null : returnType);
+				result.kind = isConstructor ? 'constructor' : 'method';
+				return result;
+			},
 			(key: Expression, type: TSTypeAnnotation, optional: boolean) => {
 				const result = t.classProperty(key, null, type);
 				result.optional = optional;
