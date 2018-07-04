@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import program from 'yargs';
 
-import transform from './index';
+import { transform } from './index';
 
 type Yargs = program.Argv;
 type Process = any;
