@@ -1,6 +1,7 @@
 declare module.exports: MyModule;
 declare module.exports: Class<MyModule>;
-// declare type DeclaredType = string | number;
+declare type DeclaredType = string | number;
+
 declare class DeclaredClass {
   hasField(name: string): boolean;
 }
