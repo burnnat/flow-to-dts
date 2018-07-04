@@ -3,6 +3,7 @@ import { BabelTypes } from '@babel/core';
 
 import createAmbientConverter from './ambient';
 import createTypeConverter from './type';
+import createClasslikeConverter from './classlike';
 
 export type Convert<T extends BabelNode, O> = (node: T) => O;
 
@@ -36,6 +37,7 @@ export function addConverter<T extends BabelNode, O>(parent: Convert<T, O>, conv
 export default function createConverters(t: BabelTypes) {
 	return {
 		convertAmbient: createAmbientConverter(t),
-		convertType: createTypeConverter(t)
-	}
+		convertType: createTypeConverter(t),
+		convertClasslike: createClasslikeConverter(t)
+	};
 }

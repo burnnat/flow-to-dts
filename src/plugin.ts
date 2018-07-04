@@ -1,5 +1,5 @@
 import { Babel, BabelPluginResult } from '@babel/core';
-import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier, DeclareModule, DeclareModuleExports, Expression, DeclareTypeAlias } from '@babel/types';
+import { TypeAlias, DeclareClass, ClassProperty, TSDeclareMethod, Identifier, DeclareModule, DeclareModuleExports, Expression, DeclareTypeAlias, DeclareInterface, TSTypeElement, tsMethodSignature } from '@babel/types';
 import recast from 'recast';
 
 import createConverters from './convert/convert';
@@ -7,7 +7,7 @@ import createConverters from './convert/convert';
 const FLOW_DIRECTIVE = '@flow';
 
 export default function({ types: t }: Babel): BabelPluginResult {
-	const { convertType, convertAmbient } = createConverters(t);
+	const { convertType, convertAmbient, convertClasslike } = createConverters(t);
 
 	return {
 		parserOverride: (
@@ -61,43 +61,14 @@ export default function({ types: t }: Babel): BabelPluginResult {
 			},
 
 			DeclareClass(path) {
-				const node: DeclareClass = path.node;
+				const result = convertClasslike(path.node as DeclareClass);
+				result.declare = true;
 
-				const members: (ClassProperty | TSDeclareMethod)[] = [];
+				path.replaceWith(result);
+			},
 
-				node.body.properties.forEach((property) => {
-					if (t.isObjectTypeProperty(property)) {
-						const value = property.value;
-
-						if (t.isFunctionTypeAnnotation(value) && (property as any).method) {
-							members.push(
-								t.tsDeclareMethod(
-									null,
-									property.key,
-									null,
-									value.params.map((param) => convertType(param)),
-									t.tsTypeAnnotation(convertType(value.returnType))
-								)
-							);
-						}
-						else {
-							members.push(
-								t.classProperty(
-									property.key,
-									null,
-									t.tsTypeAnnotation(convertType(value))
-								)
-							)
-						}
-					}
-				});
-
-				const result = t.classDeclaration(
-					node.id,
-					null,
-					t.classBody(members)
-				);
-
+			DeclareInterface(path) {
+				const result = convertClasslike(path.node as DeclareInterface);
 				result.declare = true;
 
 				path.replaceWith(result);

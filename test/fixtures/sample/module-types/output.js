@@ -20,7 +20,12 @@ declare module "nonexport" {
     hasField(name: string): boolean;
   }
 
-  function concat(first: string, second: string): Item
+  interface Other {
+    value?: number;
+    method(foo: Item[]): void;
+  }
+
+  function concat(first: Custom, second: Other): Item
 }
 
 declare module "fullexport" {
@@ -31,5 +36,10 @@ declare module "fullexport" {
     hasField(name: string): boolean;
   }
 
-  export function concat(first: string, second: string): Item;
+  export interface Other {
+    value?: number;
+    method(foo: Item[]): void;
+  }
+
+  export function concat(first: Custom, second: Other): Item;
 }

@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -143,6 +143,13 @@ export default function createConverter(t: BabelTypes) {
 				}
 			})
 		)
+	);
+
+	addConverter<ArrayTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'ArrayTypeAnnotation',
+		(node) => t.tsArrayType(convert(node.elementType))
 	);
 
 	const createTypeOf = (param: FlowType) => {

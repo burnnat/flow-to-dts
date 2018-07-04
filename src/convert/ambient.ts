@@ -1,97 +1,22 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal, DeclareInterface } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
-import createNodeConverter from './type';
+import createTypeConverter from './type';
+import createClasslikeConverter from './classlike';
 
 export default function createConverter(t: BabelTypes) {
 
-	const convertNode = createNodeConverter(t);
+	const convertType = createTypeConverter(t);
+	const convertClasslike = createClasslikeConverter(t);
 
 	const singleConverters: ConverterMap = {};
 
 	function convertSingle(node: null): null;
-	function convertSingle(node: ObjectTypeIndexer): TSIndexSignature;
-	function convertSingle(node: ObjectTypeProperty): ClassProperty | TSDeclareMethod;
-	function convertSingle(node: ObjectTypeAnnotation): ClassBody;
-	function convertSingle(node: DeclareClass): ClassDeclaration;
 	function convertSingle(node: DeclareFunction): TSDeclareFunction;
 	function convertSingle(node: BabelNode | null): BabelNode | null {
 		return convertInternal(node, singleConverters);
 	}
-
-	addConverter<ObjectTypeIndexer, TSIndexSignature>(
-		convertSingle,
-		singleConverters,
-		'ObjectTypeIndexer',
-		(node) => {
-			const id = t.identifier(node.id ? node.id.name : 'index');
-			id.typeAnnotation = t.tsTypeAnnotation(convertNode(node.key));
-
-			return t.tsIndexSignature([id], t.tsTypeAnnotation(convertNode(node.value)));
-		}
-	);
-
-	addConverter<ObjectTypeProperty, ClassProperty | TSDeclareMethod>(
-		convertSingle,
-		singleConverters,
-		'ObjectTypeProperty',
-		(node) => {
-			const { key, value } = node;
-
-			if ((node as any).method && t.isFunctionTypeAnnotation(value)) {
-				return t.tsDeclareMethod(
-					null,
-					key,
-					null,
-					value.params.map((param) => convertNode(param)),
-					t.tsTypeAnnotation(convertNode(value.returnType))
-				);
-			}
-			else {
-				return t.classProperty(
-					key,
-					null,
-					t.tsTypeAnnotation(convertNode(value))
-				);
-			}
-		}
-	);
-
-	addConverter<ObjectTypeAnnotation, ClassBody>(
-		convertSingle,
-		singleConverters,
-		'ObjectTypeAnnotation',
-		(node) => {
-			const body: Array<ClassProperty | TSDeclareMethod | TSIndexSignature> = [];
-
-			node.properties.forEach((property) => {
-				if (t.isObjectTypeProperty(property)) {
-					body.push(convertSingle(property));
-				}
-			});
-
-			if (node.indexers) {
-				node.indexers.forEach((indexer) => {
-					body.push(convertSingle(indexer));
-				});
-			}
-
-			return t.classBody(body);
-		}
-	);
-
-	addConverter<DeclareClass, ClassDeclaration>(
-		convertSingle,
-		singleConverters,
-		'DeclareClass',
-		(node) => t.classDeclaration(
-				node.id,
-				null,
-				convertSingle(node.body),
-				null
-			)
-	);
 
 	addConverter<DeclareFunction, TSDeclareFunction>(
 		convertSingle,
@@ -116,12 +41,12 @@ export default function createConverter(t: BabelTypes) {
 						}
 
 						const result = t.identifier(name);
-						result.typeAnnotation = t.tsTypeAnnotation(convertNode(param.typeAnnotation));
+						result.typeAnnotation = t.tsTypeAnnotation(convertType(param.typeAnnotation));
 
 						return result;
 					});
 
-					returnType = t.tsTypeAnnotation(convertNode(fn.returnType));
+					returnType = t.tsTypeAnnotation(convertType(fn.returnType));
 				}
 			}
 
@@ -137,7 +62,7 @@ export default function createConverter(t: BabelTypes) {
 	);
 
 	const wrapForExport = (node: FlowType, isDefault: boolean): Statement[] => {
-		const result = convertNode(node);
+		const result = convertType(node);
 		const createExport: (id: Identifier) => Statement = (
 			isDefault
 				? t.exportDefaultDeclaration
@@ -177,7 +102,7 @@ export default function createConverter(t: BabelTypes) {
 		converters,
 		'DeclareTypeAlias',
 		(node) => [
-			t.tsTypeAliasDeclaration(node.id, null, convertNode(node.right))
+			t.tsTypeAliasDeclaration(node.id, null, convertType(node.right))
 		]
 	);
 
@@ -185,7 +110,14 @@ export default function createConverter(t: BabelTypes) {
 		convert,
 		converters,
 		'DeclareClass',
-		(node) => [convertSingle(node)]
+		(node) => [convertClasslike(node)]
+	);
+
+	addConverter<DeclareInterface, Statement[]>(
+		convert,
+		converters,
+		'DeclareInterface',
+		(node) => [convertClasslike(node)]
 	);
 
 	addConverter<DeclareFunction, Statement[]>(
@@ -213,8 +145,8 @@ export default function createConverter(t: BabelTypes) {
 					t.exportNamedDeclaration(
 						t.tsTypeAliasDeclaration(
 							declaration.id,
-							convertNode(declaration.typeParameters),
-							convertNode(declaration.right)
+							convertType(declaration.typeParameters),
+							convertType(declaration.right)
 						),
 						[]
 					)
@@ -223,7 +155,16 @@ export default function createConverter(t: BabelTypes) {
 			else if (t.isDeclareClass(declaration)) {
 				return [
 					t.exportNamedDeclaration(
-						convertSingle(declaration),
+						convertClasslike(declaration),
+						[]
+					)
+				];
+			}
+			// TODO: why does babel parse this as InterfaceDeclaration rather than DeclareInterface?
+			else if (t.isInterfaceDeclaration(declaration)) {
+				return [
+					t.exportNamedDeclaration(
+						convertClasslike(declaration),
 						[]
 					)
 				];
