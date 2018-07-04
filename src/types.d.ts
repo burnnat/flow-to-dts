@@ -32,12 +32,16 @@ declare module '@babel/core' {
 		ast: object;
 	}
 
+	type TransformCallback = (err: Error, result: TransformResults) => void;
+
 	export interface Babel {
 		types: BabelTypes;
 	}
 
 	export function transform(code: string, callback: () => void): void;
-	export function transform(code: string, options: TransformOptions, callback: (err: Error, result: TransformResults) => void): void;
+	export function transform(code: string, options: TransformOptions, callback: TransformCallback): void;
+	export function transformFromAst(ast: object, code: string | null, options: TransformOptions, callback: TransformCallback): void;
+
 	export const types: BabelTypes;
 }
 

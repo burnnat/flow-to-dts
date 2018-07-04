@@ -2,10 +2,10 @@ import * as babel from '@babel/core';
 
 import plugin from './plugin';
 
-export default function transform(input: string): Promise<string> {
+export function transform(code: string): Promise<string> {
 	return new Promise((resolve, reject) => {
 		babel.transform(
-			input,
+			code,
 			{
 				babelrc: false,
 				plugins: [
@@ -23,3 +23,27 @@ export default function transform(input: string): Promise<string> {
 		);
 	});
 }
+
+export function transformAst(ast: object): Promise<object> {
+	return new Promise((resolve, reject) => {
+		babel.transformFromAst(
+			ast,
+			null,
+			{
+				ast: true,
+				babelrc: false,
+				plugins: [
+					plugin
+				]
+			},
+			(err, result) => {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(result.ast);
+				}
+			}
+		);
+	})
+};
