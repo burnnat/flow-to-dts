@@ -1,15 +1,17 @@
 import { BabelTypes } from "@babel/core";
 import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnnotation, Identifier, DeclareClass, ClassDeclaration, DeclareInterface, TSInterfaceDeclaration, TSIndexSignature, InterfaceDeclaration, InterfaceExtends, TSTypeParameterDeclaration, TypeParameterDeclaration } from "@babel/types";
 
-import createTypeConverter from './type';
+import { ConvertType } from './type';
 import { ConverterMap, convertInternal, addConverter } from "./convert";
 
 type ConvertMethod<T> = (key: Expression, typeParams: TSTypeParameterDeclaration, params: Identifier[], returnType: TSTypeAnnotation, isConstructor: boolean) => T;
 type ConvertProperty<T> = (key: Expression, type: TSTypeAnnotation, optional: boolean) => T;
 type PropertyList<M, P> = (M | P | TSIndexSignature)[];
 
-export default function createPropertyConverters(t: BabelTypes) {
-	const convertType = createTypeConverter(t);
+export type ConvertClasslike = ReturnType<typeof createConverter>;
+
+export default function createConverter(t: BabelTypes, convertType: ConvertType) {
+
 	const converters: ConverterMap = {};
 
 	function convert(node: null): null;

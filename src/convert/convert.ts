@@ -1,7 +1,10 @@
 import { Node as BabelNode } from '@babel/types';
 import { BabelTypes } from '@babel/core';
 
+import Imports from '../util/imports';
+
 import createAmbientConverter from './ambient';
+import createBuiltinConverter from './builtin';
 import createTypeConverter from './type';
 import createClasslikeConverter from './classlike';
 
@@ -11,9 +14,7 @@ export interface ConverterMap {
 	[type: string]: Convert<any, any>;
 }
 
-class ConverterError extends Error {
-
-}
+class ConverterError extends Error {}
 
 export function convertInternal<T>(node: BabelNode | null, converters: ConverterMap): T | null {
 	if (!node) {
@@ -50,10 +51,16 @@ export function addConverter<T extends BabelNode, O>(parent: Convert<T, O>, conv
 	converters[type] = worker;
 }
 
-export default function createConverters(t: BabelTypes) {
+export default function createConverters(t: BabelTypes, imports: Imports) {
+	const convertBuiltin = createBuiltinConverter(t, imports);
+	const convertType = createTypeConverter(t, convertBuiltin);
+	const convertClasslike = createClasslikeConverter(t, convertType);
+	const convertAmbient = createAmbientConverter(t, convertType, convertClasslike);
+
 	return {
-		convertAmbient: createAmbientConverter(t),
-		convertType: createTypeConverter(t),
-		convertClasslike: createClasslikeConverter(t)
+		convertAmbient,
+		convertBuiltin,
+		convertClasslike,
+		convertType
 	};
 }

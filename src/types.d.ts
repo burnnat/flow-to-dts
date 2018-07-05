@@ -6,6 +6,15 @@ declare module '@babel/core' {
 
 	type State = any;
 
+	type VisitorFn = (path: any, state: State) => void;
+
+	interface VisitorObj {
+		enter?: VisitorFn,
+		exit?: VisitorFn
+	}
+
+	type Visitor = VisitorFn | VisitorObj;
+
 	export interface BabelPluginResult {
 		pre?(state: State): void;
 		post?(state: State): void;
@@ -16,7 +25,7 @@ declare module '@babel/core' {
 		generatorOverride?: any;
 
 		visitor: {
-			[key in Node['type']]?: (path: any, state: State) => void
+			[key in Node['type']]?: Visitor
 		};
 	}
 

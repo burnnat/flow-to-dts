@@ -43,6 +43,7 @@ transformAst(input).then((output) => console.log(JSON.stringify(output)));
 | Exact Objects    | :heavy_check_mark: | `{\| name: string \|}`              | `{ name: string }`                                |
 | Open Objects     | :heavy_check_mark: | `{ name: string }`                  | `{ name: string; [field: string]: any }`          |
 | Class Types      | :heavy_check_mark: | `Class<SomeType>`                   | `typeof SomeType`                                 |
+| Built-in Types   | :heavy_check_mark: | `http$ClientRequest`                | `import { ClientRequest } from "http";`           |
 | Key Types        | :x:                | `$Keys<A>`                          |                                                   |
 | Value Types      | :x:                | `$Values<A>`                        |                                                   |
 | Difference Types | :x:                | `$Diff<A>`                          |                                                   |
@@ -59,6 +60,7 @@ Special thanks to the creators and maintainers of the following projects that ma
 - [`babel`](https://babeljs.io/)
 - [`babel-handbook`](https://github.com/jamiebuilds/babel-handbook)
 - [`babel-plugin-tester`](https://github.com/babel-utils/babel-plugin-tester)
+- [`flow-cheatsheet`](https://github.com/saltycrane/flow-cheatsheet)
 - [`flow-typed`](https://github.com/flow-typed/flow-typed)
 - [`recast`](https://github.com/benjamn/recast)
 - [`typescript-vs-flowtype`](https://github.com/niieani/typescript-vs-flowtype)

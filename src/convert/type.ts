@@ -1,8 +1,11 @@
 import { BabelTypes } from '@babel/core';
 import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
+import { ConvertBuiltin } from './builtin';
 
-export default function createConverter(t: BabelTypes) {
+export type ConvertType = ReturnType<typeof createConverter>;
+
+export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBuiltin) {
 	const converters: ConverterMap = {};
 
 	function convert(node: null): null;
@@ -194,7 +197,7 @@ export default function createConverter(t: BabelTypes) {
 		}
 	}
 
-	const createSpecialType = (name: string, params: FlowType[]) => {
+	const convertSpecialType = (name: string, params: FlowType[]) => {
 		switch (name) {
 			case 'Class':
 				return createTypeOf(params[0]);
@@ -215,23 +218,34 @@ export default function createConverter(t: BabelTypes) {
 		converters,
 		'GenericTypeAnnotation',
 		(node) => {
-			const typeParams = node.typeParameters;
-			const specialResult = createSpecialType(node.id.name, typeParams ? typeParams.params : []);
+			const sourceParams = node.typeParameters;
+			let result;
+			
+			// First check if this is a special Flow utility type
+			result = convertSpecialType(node.id.name, sourceParams ? sourceParams.params : []);
 
-			if (specialResult) {
-				return specialResult;
-			}
-			else {
-				const result = t.tsTypeReference(node.id);
-
-				if (typeParams != null) {
-					result.typeParameters = t.tsTypeParameterInstantiation(
-						typeParams.params.map((param) => convert(param))
-					);
-				}
-
+			if (result) {
 				return result;
 			}
+
+			const typeParams = sourceParams != null
+				? t.tsTypeParameterInstantiation(
+					sourceParams.params.map((param) => convert(param))
+				)
+				: null;
+			
+			// Otherwise it could be a built-in type from Node.js or similar
+			result = convertBuiltin(node, typeParams);
+
+			if (result) {
+				return result;
+			}
+
+			// If not, simply output the type as-is
+			result = t.tsTypeReference(node.id);
+			result.typeParameters = typeParams;
+
+			return result;
 		}
 	);
 

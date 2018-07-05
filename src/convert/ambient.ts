@@ -2,13 +2,10 @@ import { BabelTypes } from '@babel/core';
 import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal, DeclareInterface, TypeAlias } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
-import createTypeConverter from './type';
-import createClasslikeConverter from './classlike';
+import { ConvertType } from './type';
+import createClasslikeConverter, { ConvertClasslike } from './classlike';
 
-export default function createConverter(t: BabelTypes) {
-
-	const convertType = createTypeConverter(t);
-	const convertClasslike = createClasslikeConverter(t);
+export default function createConverter(t: BabelTypes, convertType: ConvertType, convertClasslike: ConvertClasslike) {
 
 	const singleConverters: ConverterMap = {};
 
