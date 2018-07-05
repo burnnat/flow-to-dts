@@ -1,4 +1,5 @@
 type GenericArray = Array<string>;
+declare type GenericType<T> = T | T[];
 
 declare function genericFunction<T, R = boolean>(value: T): R;
 

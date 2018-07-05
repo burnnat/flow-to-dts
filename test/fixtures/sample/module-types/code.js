@@ -13,6 +13,7 @@ declare module "defaultexport" {
 
 declare module "nonexport" {
   declare type Custom = string | number;
+  declare type GenericCustom<T> = T & Item;
 
   declare class Item {
     length: number;
@@ -29,6 +30,7 @@ declare module "nonexport" {
 
 declare module "fullexport" {
   declare export type Custom = string | number;
+  declare export type GenericCustom<T> = T & Item;
 
   declare export class Item {
     length: number;

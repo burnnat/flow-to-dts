@@ -1,5 +1,5 @@
 import { BabelTypes } from "@babel/core";
-import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnnotation, Identifier, DeclareClass, ClassDeclaration, DeclareInterface, TSInterfaceDeclaration, TSIndexSignature, InterfaceDeclaration, InterfaceExtends, TSTypeParameterDeclaration } from "@babel/types";
+import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnnotation, Identifier, DeclareClass, ClassDeclaration, DeclareInterface, TSInterfaceDeclaration, TSIndexSignature, InterfaceDeclaration, InterfaceExtends, TSTypeParameterDeclaration, TypeParameterDeclaration } from "@babel/types";
 
 import createTypeConverter from './type';
 import { ConverterMap, convertInternal, addConverter } from "./convert";
@@ -137,28 +137,31 @@ export default function createPropertyConverters(t: BabelTypes) {
 		}
 	);
 
+	interface CompatibleInterface {
+		id: Identifier;
+		typeParameters: TypeParameterDeclaration | null;
+		body: ObjectTypeAnnotation;
+	}
+
+	const convertInterface = (node: CompatibleInterface) => t.tsInterfaceDeclaration(
+		node.id,
+		convertType(node.typeParameters),
+		convertExtends(node),
+		convertInterfaceBody(node.body)
+	);
+
 	addConverter<DeclareInterface, TSInterfaceDeclaration>(
 		convert,
 		converters,
 		'DeclareInterface',
-		(node) => t.tsInterfaceDeclaration(
-			node.id,
-			convertType(node.typeParameters),
-			convertExtends(node),
-			convertInterfaceBody(node.body)
-		)
+		convertInterface
 	);
 
 	addConverter<InterfaceDeclaration, TSInterfaceDeclaration>(
 		convert,
 		converters,
 		'InterfaceDeclaration',
-		(node) => t.tsInterfaceDeclaration(
-			node.id,
-			convertType(node.typeParameters),
-			convertExtends(node),
-			convertInterfaceBody(node.body)
-		)
+		convertInterface
 	);
 
 	return convert;

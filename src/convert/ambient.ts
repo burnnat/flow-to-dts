@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal, DeclareInterface } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, Expression, DeclareTypeAlias, TSTypeAliasDeclaration, Statement, DeclareModuleExports, DeclareExportDeclaration, TSTypeAnnotation, DeclareClass, ClassDeclaration, DeclareFunction, TSDeclareFunction, ClassBody, ClassMethod, ClassProperty, ClassPrivateProperty, TSDeclareMethod, TSIndexSignature, ObjectTypeSpreadProperty, ObjectTypeIndexer, LVal, DeclareInterface, TypeAlias } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 import createTypeConverter from './type';
@@ -13,10 +13,38 @@ export default function createConverter(t: BabelTypes) {
 	const singleConverters: ConverterMap = {};
 
 	function convertSingle(node: null): null;
+	function convertSingle(node: TypeAlias): TSTypeAliasDeclaration;
+	function convertSingle(node: DeclareTypeAlias): TSTypeAliasDeclaration;
 	function convertSingle(node: DeclareFunction): TSDeclareFunction;
 	function convertSingle(node: BabelNode | null): BabelNode | null {
 		return convertInternal(node, singleConverters);
 	}
+
+	interface CompatibleTypeAlias {
+		id: Identifier;
+		typeParameters: TypeParameterDeclaration | null;
+		right: FlowType;
+	}
+
+	const convertTypeAlias = (node: CompatibleTypeAlias) => t.tsTypeAliasDeclaration(
+		node.id,
+		convertType(node.typeParameters),
+		convertType(node.right)
+	);
+
+	addConverter<DeclareTypeAlias, TSTypeAliasDeclaration>(
+		convertSingle,
+		singleConverters,
+		'DeclareTypeAlias',
+		convertTypeAlias
+	);
+
+	addConverter<TypeAlias, TSTypeAliasDeclaration>(
+		convertSingle,
+		singleConverters,
+		'TypeAlias',
+		convertTypeAlias
+	);
 
 	addConverter<DeclareFunction, TSDeclareFunction>(
 		convertSingle,
@@ -101,9 +129,7 @@ export default function createConverter(t: BabelTypes) {
 		convert,
 		converters,
 		'DeclareTypeAlias',
-		(node) => [
-			t.tsTypeAliasDeclaration(node.id, null, convertType(node.right))
-		]
+		(node) => [convertSingle(node)]
 	);
 
 	addConverter<DeclareClass, Statement[]>(
@@ -143,11 +169,7 @@ export default function createConverter(t: BabelTypes) {
 			else if (t.isTypeAlias(declaration)) {
 				return [
 					t.exportNamedDeclaration(
-						t.tsTypeAliasDeclaration(
-							declaration.id,
-							convertType(declaration.typeParameters),
-							convertType(declaration.right)
-						),
+						convertSingle(declaration),
 						[]
 					)
 				];
