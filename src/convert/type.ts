@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 
 export default function createConverter(t: BabelTypes) {
@@ -7,6 +7,7 @@ export default function createConverter(t: BabelTypes) {
 
 	function convert(node: null): null;
 	function convert(node: TypeParameterDeclaration | null): TSTypeParameterDeclaration;
+	function convert(node: TypeParameterInstantiation | null): TSTypeParameterInstantiation;
 	function convert(node: TypeParameter | null): TSTypeParameter;
 	function convert(node: ObjectTypeProperty | null): TSPropertySignature;
 	function convert(node: FunctionTypeParam | null): Identifier;
@@ -24,12 +25,24 @@ export default function createConverter(t: BabelTypes) {
 		)
 	);
 
+	addConverter<TypeParameterInstantiation, TSTypeParameterInstantiation>(
+		convert,
+		converters,
+		'TypeParameterInstantiation',
+		(node) => t.tsTypeParameterInstantiation(
+			node.params.map((param) => convert(param))
+		)
+	);
+
 	addConverter<TypeParameter, TSTypeParameter>(
 		convert,
 		converters,
 		'TypeParameter',
 		(node) => {
-			const result = t.tsTypeParameter();
+			const result = t.tsTypeParameter(
+				convert(node.bound && node.bound.typeAnnotation),
+				convert((node as any).default)
+			);
 			result.name = node.name;
 			return result;
 		}
@@ -106,7 +119,7 @@ export default function createConverter(t: BabelTypes) {
 					? node.name.name
 					: 'arg'
 			);
-			
+
 			result.optional = node.optional;
 			result.typeAnnotation = t.tsTypeAnnotation(
 				convert(node.typeAnnotation)
