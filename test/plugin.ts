@@ -36,11 +36,16 @@ describe('output files', () => {
 	fixtures.forEach((fixture) => {
 		it(fixture, () => {
 			const fixtureDir = path.join(baseDir, fixture);
+			const typesDir = path.join(fixtureDir, 'types');
 			const realOutput = path.join(fixtureDir, 'output.js');
 			const virtualOutput = path.join(fixtureDir, 'output.d.ts');
 
 			const host: ts.LanguageServiceHost = {
-				getScriptFileNames: () => [virtualOutput],
+				getScriptFileNames: () => [virtualOutput].concat(
+					fs.existsSync(typesDir)
+						? fs.readdirSync(typesDir).map((filename) => path.join(typesDir, filename))
+						: []
+				),
 				getScriptVersion: () => '0',
 				getScriptSnapshot: (filename) => {
 					if (filename === virtualOutput) {
