@@ -6,14 +6,29 @@ declare module '@babel/core' {
 
 	type State = any;
 
-	type VisitorFn = (path: any, state: State) => void;
-
-	interface VisitorObj {
-		enter?: VisitorFn,
-		exit?: VisitorFn
+	interface Path<N> {
+		node: N,
+		get<K extends keyof N>(key: K): Path<N[K]>; 
+		replaceWith(node: Node): void;
+		replaceWithMultiple(nodes: Node[]): void;
+		unshiftContainer(key: string, node: Node): void;
+		pushContainer(key: string, node: Node): void;
 	}
 
-	type Visitor = VisitorFn | VisitorObj;
+	type VisitorFn<N> = (path: Path<N>, state: State) => void;
+
+	interface VisitorObj<N> {
+		enter?: VisitorFn<N>,
+		exit?: VisitorFn<N>
+	}
+
+	type Visitor<N> = VisitorFn<N> | VisitorObj<N>;
+
+	// See https://stackoverflow.com/questions/50125893/typescript-derive-map-from-discriminated-union
+	type DiscriminateUnion<T, K extends keyof T, V extends T[K]> = T extends Record<K, V> ? T : never;
+	type VisitorMap<T extends Record<K, string>, K extends keyof T> = {
+		[V in T[K]]?: Visitor<DiscriminateUnion<T, K, V>>
+	}
 
 	export interface BabelPluginResult {
 		pre?(state: State): void;
@@ -24,9 +39,7 @@ declare module '@babel/core' {
 		parserOverride?: any;
 		generatorOverride?: any;
 
-		visitor: {
-			[key in Node['type']]?: Visitor
-		};
+		visitor: VisitorMap<Node, 'type'>;
 	}
 
 	export type BabelPlugin = (babel: Babel) => BabelPluginResult;

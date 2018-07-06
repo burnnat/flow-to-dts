@@ -35,7 +35,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 		visitor: {
 			Program: {
 				enter(path) {
-					const comments = path.node.comments;
+					const comments = (path.node as any).comments;
 
 					if (!comments) {
 						return;
@@ -69,7 +69,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 			},
 
 			ImportDeclaration(path) {
-				const node: ImportDeclaration = path.node;
+				const node = path.node;
 				const module = node.source.value;
 
 				node.specifiers.forEach((specifier) => {
@@ -94,7 +94,7 @@ export default function({ types: t }: Babel): BabelPluginResult {
 			},
 
 			TypeAlias(path) {
-				const node: TypeAlias = path.node;
+				const node = path.node;
 
 				path.replaceWith(
 					t.tsTypeAliasDeclaration(
@@ -106,21 +106,21 @@ export default function({ types: t }: Babel): BabelPluginResult {
 			},
 
 			DeclareClass(path) {
-				const result = convertClasslike(path.node as DeclareClass);
+				const result = convertClasslike(path.node);
 				result.declare = true;
 
 				path.replaceWith(result);
 			},
 
 			DeclareInterface(path) {
-				const result = convertClasslike(path.node as DeclareInterface);
+				const result = convertClasslike(path.node);
 				result.declare = true;
 
 				path.replaceWith(result);
 			},
 
 			DeclareModule(path) {
-				const node: DeclareModule = path.node;
+				const node = path.node;
 
 				const result = t.tsModuleDeclaration(
 					node.id,
