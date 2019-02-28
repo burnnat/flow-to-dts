@@ -19,7 +19,13 @@ const types: TypeMap = {
 
 export default function createConverter(t: BabelTypes, imports: Imports) {
 	function convert(node: GenericTypeAnnotation, typeParams: TSTypeParameterInstantiation | null) {
-		const tuple = types[node.id.name];
+		const id = node.id;
+
+		if (id.type !== 'Identifier') {
+			return null;
+		}
+
+		const tuple = types[id.name];
 
 		if (!tuple) {
 			return null;

@@ -1,5 +1,5 @@
 import { BabelTypes } from "@babel/core";
-import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnnotation, Identifier, DeclareClass, ClassDeclaration, DeclareInterface, TSInterfaceDeclaration, TSIndexSignature, InterfaceDeclaration, InterfaceExtends, TSTypeParameterDeclaration, TypeParameterDeclaration } from "@babel/types";
+import { Node as BabelNode, ObjectTypeAnnotation, Expression, TSType, TSTypeAnnotation, Identifier, DeclareClass, ClassDeclaration, DeclareInterface, TSInterfaceDeclaration, TSIndexSignature, InterfaceDeclaration, InterfaceExtends, TSTypeParameterDeclaration, TypeParameterDeclaration, QualifiedTypeIdentifier, TSEntityName } from "@babel/types";
 
 import { ConvertType } from './type';
 import { ConverterMap, convertInternal, addConverter } from "./convert";
@@ -103,14 +103,26 @@ export default function createConverter(t: BabelTypes, convertType: ConvertType)
 		)
 	);
 
-	// Type definitions for babel-types does not list "extends" properties on DeclareClass,
-	// DeclareInterface, or InterfaceDeclaration, so we cast to any to handle it.
-	const convertExtends = (node: any) => {
+	interface CompatibleClasslike {
+		extends: InterfaceExtends[] | null;
+	}
+
+	// TODO: this is a duplicate of the same method in type.ts ... need to find an easy way to reuse.
+	const convertQualifiedName = (value: QualifiedTypeIdentifier | Identifier): TSEntityName => {
+		if (t.isQualifiedTypeIdentifier(value)) {
+			return t.tsQualifiedName(convertQualifiedName(value.qualification), value.id);
+		}
+		else {
+			return value;
+		}
+	}
+
+	const convertExtends = (node: CompatibleClasslike) => {
 		const array: InterfaceExtends[] = node.extends || [];
 
 		return array.map(
 			(superclass) => t.tsExpressionWithTypeArguments(
-				superclass.id,
+				convertQualifiedName(superclass.id),
 				convertType(superclass.typeParameters)
 			)
 		);
@@ -129,17 +141,15 @@ export default function createConverter(t: BabelTypes, convertType: ConvertType)
 				convertClassBody(node.body)
 			);
 
-			// The babel-types API lists DeclareClass.typeParameters as type TypeParameterInstantiation
-			// but it actually parses as TypeParameterDeclaration, so we need a cast to work around it.
-			result.typeParameters = convertType(node.typeParameters as any);
+			result.typeParameters = convertType(node.typeParameters);
 			result.superTypeParameters = superclass && superclass.typeParameters;
-			(result as any).implements = (node as any).implements;
+			result.implements = node.implements;
 
 			return result;
 		}
 	);
 
-	interface CompatibleInterface {
+	interface CompatibleInterface extends CompatibleClasslike {
 		id: Identifier;
 		typeParameters: TypeParameterDeclaration | null;
 		body: ObjectTypeAnnotation;

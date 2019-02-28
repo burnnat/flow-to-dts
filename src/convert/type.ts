@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation, TSEntityName } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 import { ConvertBuiltin } from './builtin';
 
@@ -177,7 +177,7 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 		(node) => t.tsArrayType(convert(node.elementType))
 	);
 
-	const convertQualifiedName = (value: QualifiedTypeIdentifier | Identifier): TSQualifiedName | Identifier => {
+	const convertQualifiedName = (value: QualifiedTypeIdentifier | Identifier): TSEntityName => {
 		if (t.isQualifiedTypeIdentifier(value)) {
 			return t.tsQualifiedName(convertQualifiedName(value.qualification), value.id);
 		}
@@ -188,8 +188,6 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 
 	const createTypeOf = (param: FlowType) => {
 		if (t.isGenericTypeAnnotation(param)) {
-			// babel-types only advertises param.id as having type Identifier but in actuality it can also be a QualifiedTypeIdentifier
-			// See reported babel issue #8260 here: https://github.com/babel/babel/issues/8260
 			return t.tsTypeQuery(convertQualifiedName(param.id));
 		}
 		else {
@@ -197,8 +195,12 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 		}
 	}
 
-	const convertSpecialType = (name: string, params: FlowType[]) => {
-		switch (name) {
+	const convertSpecialType = (id: Identifier | QualifiedTypeIdentifier, params: FlowType[]) => {
+		if (id.type !== 'Identifier') {
+			return null;
+		}
+
+		switch (id.name) {
 			case 'Class':
 				return createTypeOf(params[0]);
 			case '$Shape':
@@ -222,7 +224,7 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 			let result;
 			
 			// First check if this is a special Flow utility type
-			result = convertSpecialType(node.id.name, sourceParams ? sourceParams.params : []);
+			result = convertSpecialType(node.id, sourceParams ? sourceParams.params : []);
 
 			if (result) {
 				return result;
@@ -242,7 +244,7 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 			}
 
 			// If not, simply output the type as-is
-			result = t.tsTypeReference(node.id);
+			result = t.tsTypeReference(convertQualifiedName(node.id));
 			result.typeParameters = typeParams;
 
 			return result;
