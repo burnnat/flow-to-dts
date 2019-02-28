@@ -90,6 +90,8 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 				t.tsTypeAnnotation(convert(node.value))
 			);
 
+			result.optional = node.optional;
+
 			if (node.variance && node.variance.kind === 'plus') {
 				result.readonly = true;
 			}
@@ -222,7 +224,7 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 		(node) => {
 			const sourceParams = node.typeParameters;
 			let result;
-			
+
 			// First check if this is a special Flow utility type
 			result = convertSpecialType(node.id, sourceParams ? sourceParams.params : []);
 
@@ -235,7 +237,7 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 					sourceParams.params.map((param) => convert(param))
 				)
 				: null;
-			
+
 			// Otherwise it could be a built-in type from Node.js or similar
 			result = convertBuiltin(node, typeParams);
 

@@ -9,7 +9,7 @@ type Readonly = {|
 
 type Extended = {
   name: string,
-  age: number
+  age?: number
 };
 
 type ExtendedReserved = {

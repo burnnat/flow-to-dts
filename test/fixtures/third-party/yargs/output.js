@@ -41,24 +41,24 @@ declare module "yargs" {
   }>;
 
   type CommonModuleObject = {
-    command: string | Array<string>,
-    aliases: Array<string> | string,
-    builder: {
+    command?: string | Array<string>,
+    aliases?: Array<string> | string,
+    builder?: {
       [field: string]: any
     } | ((yargsInstance: Yargs) => number | string | boolean | symbol | object),
-    handler: (argv: Argv) => void
+    handler?: (argv: Argv) => void
   };
 
   type ModuleObjectDesc = {
-    desc: string | false
+    desc?: string | false
   };
 
   type ModuleObjectDescribe = {
-    describe: string | false
+    describe?: string | false
   };
 
   type ModuleObjectDescription = {
-    description: string | false
+    description?: string | false
   };
 
   type ModuleObject = ModuleObjectDesc | ModuleObjectDescribe | ModuleObjectDescription;
