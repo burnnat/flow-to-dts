@@ -40,7 +40,7 @@ transformAst(input).then((output) => console.log(JSON.stringify(output)));
 | Module Exports   | :heavy_check_mark: | `declare module.exports: MyModule;` | `export = MyModule;`                              |
 | Mixed Type       | :heavy_check_mark: | `mixed`                             | `number \| string \| boolean \| symbol \| object` |
 | Nullable Types   | :heavy_check_mark: | `?string`                           | `string \| null \| undefined`                     |
-| Tuple Types      | :x:                | `[number, string]`                  | `[number, string]`                                |
+| Tuple Types      | :heavy_check_mark: | `[number, string]`                  | `[number, string]`                                |
 | Exact Objects    | :heavy_check_mark: | `{\| name: string \|}`              | `{ name: string }`                                |
 | Open Objects     | :heavy_check_mark: | `{ name: string }`                  | `{ name: string; [field: string]: any }`          |
 | Class Types      | :heavy_check_mark: | `Class<SomeType>`                   | `typeof SomeType`                                 |

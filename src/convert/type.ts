@@ -1,5 +1,5 @@
 import { BabelTypes } from '@babel/core';
-import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation, TSEntityName } from '@babel/types';
+import { AnyTypeAnnotation, BooleanTypeAnnotation, FlowType, GenericTypeAnnotation, Node as BabelNode, NullableTypeAnnotation, NullLiteralTypeAnnotation, NumberTypeAnnotation, ObjectTypeAnnotation, ObjectTypeProperty, StringTypeAnnotation, TSPropertySignature, TSType, TSTypeElement, TSTypeParameter, TSTypeParameterDeclaration, TypeParameter, TypeParameterDeclaration, UnionTypeAnnotation, FunctionTypeAnnotation, VoidTypeAnnotation, FunctionTypeParam, Identifier, StringLiteralTypeAnnotation, BooleanLiteralTypeAnnotation, NumberLiteralTypeAnnotation, ThisTypeAnnotation, MixedTypeAnnotation, TypeofTypeAnnotation, TSTypeQuery, TypeParameterInstantiation, ArrayTypeAnnotation, ExistsTypeAnnotation, IntersectionTypeAnnotation, QualifiedTypeIdentifier, TSQualifiedName, TSTypeParameterInstantiation, TSEntityName, TupleTypeAnnotation } from '@babel/types';
 import { ConverterMap, Convert, convertInternal, addConverter } from './convert';
 import { ConvertBuiltin } from './builtin';
 
@@ -170,6 +170,13 @@ export default function createConverter(t: BabelTypes, convertBuiltin: ConvertBu
 		converters,
 		'IntersectionTypeAnnotation',
 		(node) => t.tsIntersectionType(parenthesizeTypes(node.types))
+	);
+
+	addConverter<TupleTypeAnnotation, TSType>(
+		convert,
+		converters,
+		'TupleTypeAnnotation',
+		(node) => t.tsTupleType(node.types.map(convert))
 	);
 
 	addConverter<ArrayTypeAnnotation, TSType>(
