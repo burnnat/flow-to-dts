@@ -1,6 +1,6 @@
 {
   "name": "flow-to-dts",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Convert Flow libdefs to Typescript .d.ts.",
   "keywords": [
     "flowtype",
